@@ -1,0 +1,36 @@
+# Kubespray inventory — aranya nodes (DigitalOcean, sfo2).
+# ansible_host = public IP (SSH in); ip/access_ip = private IP (cluster traffic).
+all:
+  hosts:
+    aranya1:
+      ansible_host: 138.68.41.34
+      ip: 10.46.0.8
+      access_ip: 10.46.0.8
+    aranya2:
+      ansible_host: 138.197.196.242
+      ip: 10.46.0.9
+      access_ip: 10.46.0.9
+    aranya3:
+      ansible_host: 143.110.204.64
+      ip: 10.46.0.10
+      access_ip: 10.46.0.10
+  children:
+    kube_control_plane:
+      hosts:
+        aranya1:
+        aranya2:
+        aranya3:
+    kube_node:
+      hosts:
+        aranya1:
+        aranya2:
+        aranya3:
+    etcd:
+      hosts:
+        aranya1:
+        aranya2:
+        aranya3:
+    k8s_cluster:
+      children:
+        kube_control_plane:
+        kube_node:

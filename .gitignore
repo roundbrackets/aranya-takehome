@@ -1,0 +1,23 @@
+# ── Secrets: NEVER commit ────────────────────────────────────────────────
+*.key
+*.pem
+id_ed25519*
+id_rsa*
+*.kubeconfig
+kubeconfig
+admin.conf
+*.gpg-plaintext
+.env
+secrets/
+argocd-admin-*.txt
+
+# ── Kubespray checkout (cloned at a pinned tag by the runbook) ────────────
+kubespray/
+
+# ── Python (uv) ──────────────────────────────────────────────────────────
+.venv/
+__pycache__/
+*.pyc
+
+# ── OS/editor cruft ──────────────────────────────────────────────────────
+.DS_Store
