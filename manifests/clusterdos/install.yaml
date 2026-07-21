@@ -35,7 +35,6 @@ spec:
           clustername: aranya-takehome   # REQUIRED — set to a real name
           ref: v0.3.26
         gitapps:
-          # ── Required by the exercise ──────────────────────────────
           certmanager:
             enabled: true
             values:
@@ -48,10 +47,8 @@ spec:
               args: [--kubelet-insecure-tls]
           nfd:
             enabled: true
-          # ── Optional gitapp of our choosing (low-risk) ────────────
           ksm:
             enabled: true
-          # ── Everything else stays off ─────────────────────────────
           crossplane:
             enabled: false
           lgtm:
@@ -72,4 +69,3 @@ spec:
             enabled: false
           kubevirt:
             enabled: false
-          # NOTE: clusterdOS `cilium` gitapp intentionally OFF — kubespray owns the CNI.
