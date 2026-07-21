@@ -1,8 +1,6 @@
 # aranya-takehome
 
-A from-scratch Kubernetes cluster built with [kubespray](https://github.com/kubernetes-sigs/kubespray),
-made "prod-ready" with Argo CD + [clusterdOS](https://gitlab.com/aranya-tech/public/clusterdos),
-serving a public `hello aranya` page.
+A from-scratch Kubernetes cluster built with [kubespray](https://github.com/kubernetes-sigs/kubespray), augmented with Argo CD + [clusterdOS](https://gitlab.com/aranya-tech/public/clusterdos), serving a public `hello aranya` page.
 
 ## What's here
 
@@ -37,7 +35,7 @@ Preferences (encouraged, not required): private node network (done), Cilium over
 
 ## Decisions
 
-- **Calico, not Cilium.** kubespray's pinned Cilium 1.19.3 hits a `mount-cgroup` AppArmor failure on Ubuntu 24.04 with no exposed fix. The requirements don't mandate a CNI.
+- **Calico, not Cilium.** kubespray's pinned Cilium 1.19.3 hits a `mount-cgroup` AppArmor failure on Ubuntu 24.04 with no exposed fix.
 - **No kube-vip.** Internal control-plane HA already holds (3-node etcd quorum + kubespray's per-node localhost API load-balancer), and workloads span all three nodes. The admin kubeconfig points at one node IP (all three are in the cert SANs — repoint if a node dies).
 - **NodePort, not LoadBalancer/Ingress.** No cloud LB, so a `LoadBalancer` Service would stay `Pending`; NodePort `30080` is provider-neutral.
 - **metrics-server** runs with `--kubelet-insecure-tls` (kubelets serve self-signed certs).
@@ -47,7 +45,7 @@ Preferences (encouraged, not required): private node network (done), Cilium over
 ## Topology
 
 - Three nodes, each `control-plane` + `etcd` + `worker` (stacked HA). Calico CNI (kubespray default — see the runbook note on why not Cilium). Nodes talk over the private network. 
-- The API is available via any IP as long as kubeconfig is updated. 
+- The API certificates include all public control-plane IPs, allowing the kubeconfig to be repointed to any node if required.
 - The nginx demo is reacheable via IP or round-robin DNS — `aranya.gunnarsson.cc`.
 - Endpoint (API on `:6443`, nginx NodePort on `:30080`).
 
