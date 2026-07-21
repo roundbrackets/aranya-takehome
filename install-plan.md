@@ -1,3 +1,6 @@
+op[en ports!
+
+
 # Install plan
 
 Execute top to bottom. Each step is a gate for the next. Minimal checks only —
@@ -8,13 +11,15 @@ the internet. SSH as `root` with the provided key.
 
 ## Inputs to fill once (then everything else is fixed)
 
+VLAN = `192.168.0.0/24`. Confirm each node's actual VLAN IP with `ip -br addr`.
+
 | Node | Public IP (SSH) | VLAN private IP |
 |------|-----------------|-----------------|
-| node1 | `<PUB1>` | 10.20.0.11 |
-| node2 | `<PUB2>` | 10.20.0.12 |
-| node3 | `<PUB3>` | 10.20.0.13 |
+| node1 | `<PUB1>` | 192.168.0.11 |
+| node2 | `<PUB2>` | 192.168.0.12 |
+| node3 | `<PUB3>` | 192.168.0.13 |
 
-- API VIP (kube-vip, unused VLAN addr): `10.20.0.10`
+- API VIP (kube-vip, unused VLAN addr): `192.168.0.10`
 - VLAN interface name on the nodes: `<IFACE>` (e.g. `eth1` — confirm once: `ssh root@<PUB1> ip -br addr`)
 - SSH key path: `<KEY>`
 
@@ -33,32 +38,20 @@ uv pip install -r requirements.txt
 ## Step 2 — Inventory (overlay our config onto the kubespray sample)
 ```sh
 cp -rfp inventory/sample inventory/aranya
-cp ../inventory/rehearsal/hosts.yaml inventory/aranya/hosts.yaml   # then fill <PUB*> IPs
+cp ../inventory/production/hosts.yaml inventory/aranya/hosts.yaml
+cp ../inventory/production/k8s-cluster.yml inventory/aranya/group_vars/k8s_cluster/k8s-cluster.yml
 ```
+List changes to files
+
 Edit `inventory/aranya/group_vars/k8s_cluster/k8s-cluster.yml`:
 ```yaml
 kube_network_plugin: cilium
-supplementary_addresses_in_ssl_keys:      # so the emailed kubeconfig works over public IPs
-  - <PUB1>
-  - <PUB2>
-  - <PUB3>
-```
-Edit `inventory/aranya/group_vars/all/all.yml`:
-```yaml
+# so the emailed kubeconfig works over public IPs
+supplementary_addresses_in_ssl_keys: >-
+  {{ groups['kube_control_plane'] | map('extract', hostvars, 'ansible_host') | list }}
 kubeconfig_localhost: true                # drops admin.conf into inventory/aranya/artifacts/
-# --- no-SPOF API endpoint via kube-vip (VLAN supports ARP; done in the same run) ---
-kube_vip_enabled: true
-kube_vip_controlplane_enabled: true
-kube_vip_arp_enabled: true
-kube_vip_address: 10.20.0.10
-kube_vip_interface: <IFACE>
-loadbalancer_apiserver:
-  address: 10.20.0.10
-  port: 6443
+kubeconfig_localhost_ansible_host: true
 ```
-> If kube-vip misbehaves, remove that block and re-run — it's a preference, not a
-> requirement. Keep kube-proxy (default). Do not enable any clusterdOS Cilium gitapp.
-
 ## Step 3 — Build the cluster
 ```sh
 ansible-playbook -i inventory/aranya/hosts.yaml -u root --private-key <KEY> -b cluster.yml
@@ -69,7 +62,7 @@ ansible-playbook -i inventory/aranya/hosts.yaml -u root --private-key <KEY> -b c
 ```sh
 export KUBECONFIG="$PWD/inventory/aranya/artifacts/admin.conf"
 # point the kubeconfig at a reachable endpoint for later delivery:
-#   server: https://10.20.0.10:6443  (VIP; reachable from a node/tunnel)
+#   server: https://192.168.0.10:6443  (VIP; reachable from a node/tunnel)
 #   for reviewers, a public node IP is in the cert SANs — repoint as needed
 kubectl get nodes -o wide        # GATE: all 3 Ready
 ```
@@ -78,7 +71,11 @@ kubectl get nodes -o wide        # GATE: all 3 Ready
 ```sh
 cd ..                            # back to aranya-takehome
 kubectl create namespace argocd
-kubectl apply -n argocd -f "https://raw.githubusercontent.com/argoproj/argo-cd/${ARGOCD_VERSION}/manifests/install.yaml"
+X kubectl apply -n argocd -f "https://raw.githubusercontent.com/argoproj/argo-cd/${ARGOCD_VERSION}/manifests/install.yaml"
+
+# The CustomResourceDefinition "applicationsets.argoproj.io" is invalid: metadata.annotations: Too long: may not be more than 262144 bytes
+
+kubectl apply -n argocd --server-side --force-conflicts -f  "https://raw.githubusercontent.com/argoproj/argo-cd/${ARGOCD_VERSION}/manifests/install.yaml"
 kubectl -n argocd rollout status deploy/argocd-server --timeout=300s   # GATE
 ```
 
@@ -87,6 +84,40 @@ kubectl -n argocd rollout status deploy/argocd-server --timeout=300s   # GATE
 kubectl apply -f manifests/clusterdos/install.yaml
 kubectl -n argocd get applications   # GATE: children Synced + Healthy (give it a few min)
 ```
+
+Warning: metadata.finalizers: "resources-finalizer.argocd.argoproj.io": prefer a domain-qualified finalizer name including a path (/) to avoid accidental conflicts with other finalizer writers
+
+metrics-server stuck
+
+$ k top nodes
+error: Metrics API not available
+
+server logs
+Jul 20 23:01:06 node1 kubelet[18880]: I0720 23:01:06.058122   18880 ???:1] "http:
+TLS handshake error from 192.168.0.2:49705: remote error: tls: bad certificate"
+E0720 23:12:51.061418       1 scraper.go:149] "Failed to scrape node" err="Get \"https://192.168.0.1:10250/metrics/resource\": tls: failed to verify certificate: x509: cannot validate certificate for 192.168.0.1 because it doesn't contain any IP SANs" node="node1"
+
+install.yaml
+metricsserver:
+    values:
+        args: [--kubelet-insecure-tls]
+
+Calico service-account missing
+Error creating: pods "calico-node-" is forbidden: error looking up service account kube-system/calico-node: serviceaccount "calico-node" not
+Nameserver klimit exceeded
+
+cert-manager
+clusterdos-certmanager-cert-manager-7b9b8fb959-4bd7r              0/1     CrashLoopBackOff   11 (4m30s ago)   35m
+          message: back-off 5m0s restarting failed container=cert-manager-controller pod=clusterdos-certmanager-cert-manager-7b9b8fb959-4bd7r_clusterdos-cert-manager(8df1876d-9950-4d2d-9d21-7fcf06db1861)
+
+E0720 23:25:21.508526       1 main.go:41] "error executing command" err="the Gateway API CRDs do not seem to be present, but ExperimentalGatewayAPISupport is set to true. Please install the gateway-api CRDs. (the server could not find the requested resource)" logger="cert-manager"          
+
+ 3           certmanager:
+ 2             enabled: true
+ 1             values:
+ 0               featureGates: "ExperimentalGatewayAPISupport=gfalse"
+  1               config:
+ 0                 enableGatewayAPI: false
 
 ## Step 7 — hello-aranya (public)
 ```sh
@@ -110,3 +141,10 @@ scripts/encrypt-kubeconfig.sh admin.conf <reviewer keys...>
 ## Then: repeat on the aranya nodes
 Same steps with `inventory/production/hosts.yaml` (real IPs already filled) and a
 free VLAN VIP (not `10.46.0.10` — that's aranya3). Confirm the VLAN interface name.
+
+---
+
+- For these instructions to work all your hosts need to be reachable via a public ip
+- each need the same ssh key for root
+
+

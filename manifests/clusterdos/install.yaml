@@ -38,8 +38,14 @@ spec:
           # ── Required by the exercise ──────────────────────────────
           certmanager:
             enabled: true
+            values:
+              featureGates: "ExperimentalGatewayAPISupport=false"
+              config:
+                enableGatewayAPI: false
           metricsserver:
             enabled: true
+            values:
+              args: [--kubelet-insecure-tls]
           nfd:
             enabled: true
           # ── Optional gitapp of our choosing (low-risk) ────────────

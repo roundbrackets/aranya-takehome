@@ -14,12 +14,22 @@
 - _TODO: exact install/verify commands._
 
 ## 2. Preflight
-```sh
-scripts/preflight.sh <node1-ip> <node2-ip> <node3-ip>
-```
-Confirms SSH, private-network reachability, RAM/disk, outbound internet.
+
+NOTE: base install of recent ubuntu is fine
+
+Confirm
+- reachable via ssh
+- ssh key for root same on all hosts
+- hosts can talk to each other preferably via private network
+- hosts can reach the internet
+- has recommendad RAM/CPU/disk
 
 ## 3. Kubespray
+
+- source version ip 
+- clone kubespray
+- 
+
 ```sh
 source versions.env
 git clone --depth 1 --branch "$KUBESPRAY_VERSION" https://github.com/kubernetes-sigs/kubespray.git
@@ -34,6 +44,8 @@ ansible-playbook -i inventory/aranya/hosts.yaml --private-key <key> cluster.yml
 
 ## 4. Validate base cluster
 - 3 nodes Ready, system pods healthy, 3 etcd members, CoreDNS resolves, Cilium healthy.
+
+NOTE: opens public IP
 
 ## 5. Argo CD
 ```sh
