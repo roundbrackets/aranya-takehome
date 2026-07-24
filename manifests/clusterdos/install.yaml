@@ -71,5 +71,8 @@ spec:
             enabled: false
           redis:
             enabled: true
-            repoURL: git@github.com:roundbrackets/aranya-takehome.git
+            namespace: redis
+            repoURL: https://github.com/roundbrackets/aranya-takehome.git
             path: charts/redis
+            targetRevision: main
+            automated: true

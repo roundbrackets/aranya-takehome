@@ -1,11 +1,7 @@
-replicaCount: 1
-
 image:
-  repository: redis:8.8.0
-  # This sets the pull policy for images.
+  repository: redis
+  tag: "8.8.0"
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  pullPolicy: IfNotPresent
 
-# Values.service.port  
-port: 6379
+port: 6379  
