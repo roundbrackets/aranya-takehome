@@ -1,0 +1,78 @@
+---
+# clusterdOS install manifest — apply after Argo CD is up.
+# Derived from clusterdos-main/install.yaml (v0.3.26).
+# Edits vs upstream default: clustername set; certmanager, metricsserver, nfd, ksm enabled.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: clusterdos
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    name: in-cluster
+    namespace: argocd
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      allowEmpty: true
+      selfHeal: true
+    syncOptions:
+      - RespectIgnoreDifferences=true
+      - CreateNamespace=true
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+  source:
+    repoURL: 'https://gitlab.com/aranya-tech/public/clusterdOS.git'
+    path: metadeployment/
+    targetRevision: v0.3.26
+    helm:
+      valuesObject:
+        clusterdos:
+          clustername: linode
+          ref: v0.3.26
+        gitapps:
+          certmanager:
+            enabled: true
+            values:
+              featureGates: "ExperimentalGatewayAPISupport=false"
+              config:
+                enableGatewayAPI: false
+          metricsserver:
+            enabled: true
+            values:
+              args: [--kubelet-insecure-tls]
+          nfd:
+            enabled: true
+          ksm:
+            enabled: true
+          crossplane:
+            enabled: false
+          lgtm:
+            enabled: false
+          nvidiagpuoperator:
+            enabled: false
+          rook:
+            enabled: false
+          wekafs:
+            enabled: false
+          tailscale:
+            enabled: false
+          traefik:
+            enabled: false
+          inference:
+            enabled: false
+          slurm:
+            enabled: false
+          kubevirt:
+            enabled: false
+          redis:
+            enabled: true
+            namespace: redis
+            repoURL: https://github.com/roundbrackets/aranya-takehome.git
+            path: charts/redis
+            targetRevision: main
+            automated: true

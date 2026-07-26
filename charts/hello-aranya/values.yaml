@@ -1,0 +1,10 @@
+image:
+  repository: nginx
+  tag: "1.27-alpine"
+  pullPolicy: IfNotPresent
+
+name: hello-aranya
+namespace: aranya
+
+port: 80 
+nodePort: 80080 

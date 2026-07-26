@@ -1,0 +1,31 @@
+# Kubespray inventory — linode nodes (DigitalOcean, sfo2).
+# ansible_host = public IP (SSH in); ip/access_ip = private IP (cluster traffic).
+all:
+  hosts:
+    linode1:
+      ansible_host: 173.255.241.165
+      ip: 192.168.1.2
+      access_ip: 192.168.1.2
+    linode2:
+      ansible_host: 45.56.83.10
+      ip: 192.168.1.1
+      access_ip: 192.168.1.1
+    linode3:
+      ansible_host: 74.207.241.150
+      ip: 192.168.1.3 
+      access_ip: 192.168.1.3
+  children:
+    kube_control_plane:
+      hosts:
+        linode1:
+    kube_node:
+      hosts:
+        linode2:
+        linode3:
+    etcd:
+      hosts:
+        linode1:
+    k8s_cluster:
+      children:
+        kube_control_plane:
+        kube_node:

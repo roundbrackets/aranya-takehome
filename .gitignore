@@ -10,6 +10,9 @@ admin.conf
 .env
 secrets/
 argocd-admin-*.txt
+kubeconfig
+config
+*.swp
 
 # ── Kubespray checkout (cloned at a pinned tag by the runbook) ────────────
 kubespray/
