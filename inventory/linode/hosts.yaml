@@ -18,13 +18,18 @@ all:
     kube_control_plane:
       hosts:
         linode1:
+        linode2:
+        linode3:
     kube_node:
       hosts:
+        linode1:
         linode2:
         linode3:
     etcd:
       hosts:
         linode1:
+        linode2:
+        linode3:
     k8s_cluster:
       children:
         kube_control_plane:

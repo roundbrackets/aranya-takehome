@@ -70,9 +70,16 @@ spec:
           kubevirt:
             enabled: false
           redis:
-            enabled: true
+            enabled: false 
             namespace: redis
             repoURL: https://github.com/roundbrackets/aranya-takehome.git
             path: charts/redis
+            targetRevision: main
+            automated: true
+          hello-aranya:
+            enabled: true
+            namespace: aranya
+            repoURL: https://github.com/roundbrackets/aranya-takehome.git
+            path: charts/hello-aranya
             targetRevision: main
             automated: true
