@@ -225,3 +225,15 @@ curl -s http://aranya.gunnarsson.cc:30080   # renders "hello aranya" (RR DNS -> 
 ## Step 8 — validation
 
 bash ./scripts/verify-requirements.sh
+
+## Fixes 
+
+For cilium, /opt/cni must be root:root
+
+for kube_vip: it must be enabled and variables set. VIP interfaces must be provided and can be set in hosts.yaml 
+
+## Notes
+
+Linode enables cilium, kube_vip, and uses kubespray yo install argo amd adds clusterdos as a cluster app.
+
+kubestrap_linode is a fork of kubespray because of the addition of clusterdos.
