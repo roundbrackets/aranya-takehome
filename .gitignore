@@ -19,6 +19,7 @@ TROUBLESHOOTING-nodes-notready.md
 **/artifacts/
 **/credentials/
 kubespray_aranya
+kubeconfig.gpg
 
 # ── Python (uv) ──────────────────────────────────────────────────────────
 .venv/
