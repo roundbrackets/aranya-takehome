@@ -182,6 +182,9 @@ argocd_enabled: true
 # Use the following var to set admin password
 # argocd_admin_password: "password"
 
+# ClusterdOS
+clusterdos_enabled: true
+
 # The plugin manager for kubectl
 
 # Kube VIP

@@ -1,0 +1,2 @@
+clusterdos_enabled: false
+clusterdos_manifest: clusterdos-install.yaml

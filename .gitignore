@@ -16,9 +16,8 @@ config
 output
 *.log
 TROUBLESHOOTING-nodes-notready.md
-
-# ── Kubespray checkout (cloned at a pinned tag by the runbook) ────────────
-kubespray/
+**/artifacts/
+**/credentials/
 
 # ── Python (uv) ──────────────────────────────────────────────────────────
 .venv/

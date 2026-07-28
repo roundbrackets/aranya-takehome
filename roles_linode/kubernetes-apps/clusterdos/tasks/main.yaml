@@ -1,0 +1,21 @@
+- name: ClusterdOS | Wait for Argo CD Application CRD to be established
+  become: true
+  command: >-
+    {{ bin_dir }}/kubectl --kubeconfig {{ kube_config_dir }}/admin.conf
+    wait --for condition=established --timeout=120s crd/applications.argoproj.io
+  changed_when: false
+
+- name: ClusterdOS | Copy Application manifest
+  become: true
+  copy:
+    src: "{{ clusterdos_manifest }}"
+    dest: "{{ kube_config_dir }}/{{ clusterdos_manifest }}"
+    mode: "0644"
+
+- name: ClusterdOS | Apply Application
+  become: true
+  kube:
+    name: clusterdOS
+    kubectl: "{{ bin_dir }}/kubectl"
+    filename: "{{ kube_config_dir }}/{{ clusterdos_manifest }}"
+    state: latest
