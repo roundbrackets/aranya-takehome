@@ -73,6 +73,6 @@ spec:
             enabled: true
             namespace: clusterdos-redis
             repoURL: https://github.com/roundbrackets/redis-deploy.git
-            path: .
+            path: ./
             targetRevision: main
             automated: true
