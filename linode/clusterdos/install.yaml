@@ -71,8 +71,15 @@ spec:
             enabled: false
           redis:
             enabled: true
-            namespace: clusterdos-redis
-            repoURL: https://github.com/roundbrackets/redis-deploy.git
-            path: .
+            namespace: redis
+            repoURL: https://github.com/roundbrackets/aranya-takehome.git
+            path: charts/redis
+            targetRevision: main
+            automated: true
+          redis:
+            enabled: true
+            namespace: aranya
+            repoURL: https://github.com/roundbrackets/aranya-takehome.git
+            path: charts/hello-aranya
             targetRevision: main
             automated: true

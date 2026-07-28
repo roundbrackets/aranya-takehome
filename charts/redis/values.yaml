@@ -1,7 +1,0 @@
-image:
-  repository: redis
-  tag: "8.8.0"
-  pullPolicy: IfNotPresent
-  pullPolicy: IfNotPresent
-
-port: 6379  
