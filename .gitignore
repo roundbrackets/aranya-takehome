@@ -18,6 +18,7 @@ output
 TROUBLESHOOTING-nodes-notready.md
 **/artifacts/
 **/credentials/
+kubespray_aranya
 
 # ── Python (uv) ──────────────────────────────────────────────────────────
 .venv/
